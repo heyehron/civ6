@@ -99,7 +99,8 @@ class LogSource(QObject):
 
     def _tick(self) -> None:
         if not self.tailer.path.exists():
-            self.status_changed.emit(f"Waiting for {self.tailer.path.name} (start Civ VI with the mod enabled)")
+            self.status_changed.emit(f"{self.tailer.path.name} does not exist at {self.tailer.path}. "
+                                     "Press Check setup to find out why.")
             return
         state = self.tailer.apply(self.tailer.poll())
         if state is not None:
@@ -107,7 +108,8 @@ class LogSource(QObject):
             self.state_changed.emit(state)
             self.status_changed.emit(f"Live · turn {state.turn}")
         elif self.last_update is None:
-            self.status_changed.emit("Log found · no advisor data yet (is the mod enabled?)")
+            self.status_changed.emit("Log found but no advisor lines yet. Start or reload a game with the mod "
+                                     "enabled; press Check setup if nothing appears.")
 
 
 class FileSource(QObject):
