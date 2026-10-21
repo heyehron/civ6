@@ -62,3 +62,30 @@ def test_diagnose_flags_mod_that_never_snapshots(tmp_path):
     text = 'x CIV6ADV|{"kind":"hello","version":2}\nx CIV6ADV|{"kind":"warning","text":"no local player yet (init)"}\n'
     checks = diagnose._advisor_lines(text)
     assert [c.level for c in checks][-1] == "fail" and any("no local player" in c.text for c in checks)
+
+
+@pytest.mark.skipif(LUA is None, reason="lua interpreter not installed")
+def test_mod_survives_nil_capital_and_non_table_lists(tmp_path):
+    script = (f'dofile("{ROOT / "tests/lua/mock_civ.lua"}") '
+              'PlayerManager.GetAliveMinors = function() return true end '
+              f'dofile("{ROOT / "mod/CIV6ADV/UI/CIV6ADV.lua"}")')
+    out = subprocess.run([LUA, "-e", script], capture_output=True, text=True, timeout=20)
+    assert out.returncode == 0, out.stderr
+    log = tmp_path / "Lua.log"
+    log.write_text("".join(f"CIV6ADV: {line}\n" for line in out.stdout.splitlines()), encoding="utf-8")
+    snap = next(p for p in LogTailer(log).poll() if p["kind"] == "snapshot")
+    assert any("expected a table from GetAliveMinors, got boolean" in e for e in snap["mod_errors"])
+    assert "stack traceback" not in " ".join(snap["mod_errors"])
+    assert snap["leader"] == "LEADER_TAMAR"
+
+
+@pytest.mark.skipif(LUA is None, reason="lua interpreter not installed")
+def test_city_state_without_capital_is_not_an_error(tmp_path):
+    script = (f'dofile("{ROOT / "tests/lua/mock_civ.lua"}") '
+              'Players[5].GetCities = function() return { GetCapitalCity = function() return nil end } end '
+              f'dofile("{ROOT / "mod/CIV6ADV/UI/CIV6ADV.lua"}")')
+    out = subprocess.run([LUA, "-e", script], capture_output=True, text=True, timeout=20)
+    log = tmp_path / "Lua.log"
+    log.write_text("".join(f"CIV6ADV: {line}\n" for line in out.stdout.splitlines()), encoding="utf-8")
+    snap = next(p for p in LogTailer(log).poll() if p["kind"] == "snapshot")
+    assert "mod_errors" not in snap

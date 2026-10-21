@@ -51,12 +51,19 @@ local swallowed, swallowedSeen = {}, {}
 local function try(fn, fallback)
   local ok, res = pcall(fn)
   if ok then return res end
-  local msg = tostring(res):sub(1, 140)
+  local msg = tostring(res):gsub("\n.*", ""):sub(1, 140)
   if not swallowedSeen[msg] and #swallowed < 20 then
     swallowedSeen[msg] = true
     swallowed[#swallowed + 1] = msg
   end
   return fallback
+end
+
+-- ipairs on something that is not a table raises an error; report which call it was and skip it.
+local function asTable(value, label)
+  if type(value) == "table" then return value end
+  try(function() error("expected a table from " .. label .. ", got " .. type(value), 0) end)
+  return {}
 end
 
 local function lookup(tableName, key, column)
@@ -217,7 +224,7 @@ local function religionInfo(s, id, player)
     local r = player:GetReligion():GetReligionTypeCreated()
     if r == nil or r < 0 then return end
     local civs, needed = 0, 0
-    for _, pid in ipairs(PlayerManager.GetAliveMajorIDs()) do
+    for _, pid in ipairs(asTable(PlayerManager.GetAliveMajorIDs(), "GetAliveMajorIDs")) do
       needed = needed + 1
       local p = Players[pid]
       if p:GetReligion():GetReligionInMajorityOfCities() == r then civs = civs + 1 end
@@ -231,7 +238,7 @@ local function cityStateInfo(s, id, player)
   s.city_states = try(function()
     local out = {}
     local diplo = player:GetDiplomacy()
-    for _, minor in ipairs(PlayerManager.GetAliveMinors()) do
+    for _, minor in ipairs(asTable(PlayerManager.GetAliveMinors(), "GetAliveMinors")) do
       local mid = minor:GetID()
       if diplo:HasMet(mid) then
         local cs = { name = Locale.Lookup(PlayerConfigurations[mid]:GetCivilizationShortDescription()) }
@@ -239,6 +246,7 @@ local function cityStateInfo(s, id, player)
         cs.envoys = try(function() return minor:GetInfluence():GetTokensReceived(id) end)
         cs.religion = try(function()
           local cap = minor:GetCities():GetCapitalCity()
+          if cap == nil then return nil end
           local r = cap:GetReligion():GetMajorityReligion()
           if r ~= nil and r >= 0 then return GameInfo.Religions[r].ReligionType end
           return nil
@@ -254,7 +262,7 @@ local function diplomacyInfo(s, id, player)
   s.at_war_with = try(function()
     local out = {}
     local diplo = player:GetDiplomacy()
-    for _, pid in ipairs(PlayerManager.GetAliveMajorIDs()) do
+    for _, pid in ipairs(asTable(PlayerManager.GetAliveMajorIDs(), "GetAliveMajorIDs")) do
       if pid ~= id and diplo:IsAtWarWith(pid) then
         out[#out + 1] = PlayerConfigurations[pid]:GetCivilizationTypeName()
       end
@@ -271,7 +279,7 @@ local function diplomacyInfo(s, id, player)
   end)
   try(function()
     local held = 0
-    for _, pid in ipairs(PlayerManager.GetAliveMajorIDs()) do
+    for _, pid in ipairs(asTable(PlayerManager.GetAliveMajorIDs(), "GetAliveMajorIDs")) do
       for _, city in Players[pid]:GetCities():Members() do
         if city:IsOriginalCapital() and city:GetOwner() == id then held = held + 1 end
       end
@@ -281,7 +289,7 @@ local function diplomacyInfo(s, id, player)
   end)
   s.governors = try(function()
     local out = {}
-    for _, g in ipairs(player:GetGovernors():GetGovernorList()) do
+    for _, g in ipairs(asTable(player:GetGovernors():GetGovernorList(), "GetGovernorList")) do
       local row = GameInfo.Governors[g:GetType()]
       out[#out + 1] = { type = row.GovernorType, established = g:IsEstablished() }
     end

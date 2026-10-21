@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import asdict, dataclass, field
-from typing import Any
+from typing import Any, ClassVar
 
 from ..engine.batch import DIFFICULTIES
 
@@ -82,9 +82,20 @@ class GameState:
     governors: list[dict] = field(default_factory=list)
     extra: dict[str, Any] = field(default_factory=dict)
 
+    DICT_FIELDS: ClassVar[tuple] = ("yields", "balances", "religion", "victory_progress", "units", "resources")
+    LIST_FIELDS: ClassVar[tuple] = ("game_modes", "techs_known", "civics_known", "policies", "cities", "wonders_owned",
+                   "wonders_lost", "city_states", "at_war_with", "great_people", "governors")
+
     @classmethod
     def from_snapshot(cls, snap: dict) -> "GameState":
         known = {k: v for k, v in snap.items() if k in cls.__dataclass_fields__}
+        # Civ's Lua has no separate empty list and empty dict: both are written as [] by the mod.
+        for k in cls.DICT_FIELDS:
+            if k in known and not isinstance(known[k], dict):
+                known[k] = {}
+        for k in cls.LIST_FIELDS:
+            if k in known and not isinstance(known[k], list):
+                known[k] = list(known[k].values()) if isinstance(known[k], dict) else []
         s = cls(**known)
         s.extra = {k: v for k, v in snap.items() if k not in cls.__dataclass_fields__}
         s.difficulty = _norm_prefixed(s.difficulty, "DIFFICULTY_")

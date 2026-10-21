@@ -118,7 +118,10 @@ class AppState(QObject):
     def set_game_state(self, state: GameState | None) -> None:
         self.game_state = state
         self.game_state_changed.emit()
-        self.recompute_advice()
+        try:
+            self.recompute_advice()
+        except Exception as exc:
+            self.toast.emit("error", f"Could not evaluate playbooks on this game state: {type(exc).__name__}: {exc}")
 
     def game_key(self) -> str:
         return (self.game_state.game_id if self.game_state and self.game_state.game_id else "current")

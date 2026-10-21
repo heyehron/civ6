@@ -264,6 +264,13 @@ class InGamePage(QWidget):
         self.app.set_manual(item.data(0, Qt.UserRole), item.checkState(0) == Qt.Checked)
 
     def refresh_state(self) -> None:
+        try:
+            self._render_state()
+        except Exception as exc:  # a bad snapshot must be visible, not a silently blank card
+            self.state_lbl.setText(f"<span style='color:{C['red']}'>Could not show the game state: "
+                                   f"{type(exc).__name__}: {exc}</span>")
+
+    def _render_state(self) -> None:
         st = self.app.game_state
         if st is None:
             self.state_lbl.setText(f"<span style='color:{C['faint']}'>No game data yet.</span>")
