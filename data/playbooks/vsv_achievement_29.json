@@ -1,0 +1,57 @@
+{
+ "achievement": "vsv_achievement_29",
+ "title": "Smörgåsbord",
+ "summary": "As Kristina, cities on Snow, Tundra, Desert, Plains and Grassland, each with an Open-Air Museum.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Pick a map with both poles and deserts (e.g. Continents, Standard+)."
+ ],
+ "steps": [
+  {
+   "id": "setup_leader",
+   "text": "Play as Kristina",
+   "detail": "Checked on turn 1 from the game data.",
+   "done_when": {
+    "field": "leader",
+    "op": "in",
+    "value": [
+     "LEADER_KRISTINA"
+    ]
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "leader",
+      "op": "exists"
+     },
+     {
+      "not": {
+       "field": "leader",
+       "op": "in",
+       "value": [
+        "LEADER_KRISTINA"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "cities",
+   "text": "Settle on all five terrains",
+   "detail": "City centre terrain is what counts (Unverified).",
+   "manual": true
+  },
+  {
+   "id": "museums",
+   "text": "Open-Air Museum in each of those cities",
+   "manual": true
+  },
+  {
+   "id": "check",
+   "text": "Hold at the start of a turn",
+   "manual": true
+  }
+ ]
+}

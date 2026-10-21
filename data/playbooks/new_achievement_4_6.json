@@ -1,0 +1,23 @@
+{
+ "achievement": "new_achievement_4_6",
+ "title": "Civ 6 Civets System",
+ "summary": "Get 5 Civic boosts (Inspirations) in one turn.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Unverified: boosts for civics already finished do not count."
+ ],
+ "steps": [
+  {
+   "id": "stack",
+   "text": "Line up 5 inspirations you can trigger on demand",
+   "detail": "e.g. building a district or wonder, meeting city-states.",
+   "manual": true
+  },
+  {
+   "id": "fire",
+   "text": "Trigger them in the same turn",
+   "manual": true
+  }
+ ]
+}

@@ -1,0 +1,28 @@
+{
+ "achievement": "new_achievement_4_21",
+ "title": "Secret Service",
+ "summary": "Have Top Secret access with five civilizations at once.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Needs a Standard or larger map to have 5 rivals."
+ ],
+ "steps": [
+  {
+   "id": "met",
+   "text": "Meet 5+ civs",
+   "manual": true
+  },
+  {
+   "id": "access",
+   "text": "Raise access levels",
+   "detail": "Delegations, embassies, trade routes, alliances and spies all add access.",
+   "manual": true
+  },
+  {
+   "id": "five",
+   "text": "Top Secret with 5 at once",
+   "manual": true
+  }
+ ]
+}

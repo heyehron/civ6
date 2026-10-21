@@ -1,0 +1,56 @@
+{
+ "achievement": "stk4_achievement_06",
+ "title": "Steel-Driving Man",
+ "summary": "Recall a Hero after the Industrial Era.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Unverified: whether 'after' means Modern era or any time past the Industrial era starting."
+ ],
+ "steps": [
+  {
+   "id": "setup_heroes_and_legends",
+   "text": "Game mode on: Heroes And Legends",
+   "done_when": {
+    "field": "game_modes",
+    "op": "contains",
+    "value": "heroes_and_legends"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "turn",
+      "op": "gte",
+      "value": 1
+     },
+     {
+      "field": "game_modes",
+      "op": "not_contains",
+      "value": "heroes_and_legends"
+     }
+    ]
+   }
+  },
+  {
+   "id": "claim",
+   "text": "Claim any hero",
+   "manual": true
+  },
+  {
+   "id": "modern",
+   "text": "Reach the Modern era",
+   "detail": "'After the Industrial Era' read as Modern or later.",
+   "done_when": {
+    "field": "era_index",
+    "op": "gte",
+    "value": 5
+   }
+  },
+  {
+   "id": "recall",
+   "text": "Recall a hero",
+   "detail": "Recall costs faith; keep a buffer.",
+   "manual": true
+  }
+ ]
+}

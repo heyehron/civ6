@@ -1,0 +1,46 @@
+{
+ "achievement": "vsv_achievement_06",
+ "title": "The Sunny Way",
+ "summary": "Win a game as Wilfrid Laurier.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Canada cannot be surprise-warred and gains favor easily; diplomatic victory suits it."
+ ],
+ "steps": [
+  {
+   "id": "setup_leader",
+   "text": "Play as Wilfrid Laurier",
+   "detail": "Checked on turn 1 from the game data.",
+   "done_when": {
+    "field": "leader",
+    "op": "in",
+    "value": [
+     "LEADER_LAURIER"
+    ]
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "leader",
+      "op": "exists"
+     },
+     {
+      "not": {
+       "field": "leader",
+       "op": "in",
+       "value": [
+        "LEADER_LAURIER"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "win",
+   "text": "Win the game",
+   "manual": true
+  }
+ ]
+}

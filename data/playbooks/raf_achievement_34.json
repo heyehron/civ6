@@ -1,0 +1,56 @@
+{
+ "achievement": "raf_achievement_34",
+ "title": "Taxation Without Representation",
+ "summary": "As England, lose a city to disloyalty while it has an established Financier (Reyna).",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Do this early with a throwaway city."
+ ],
+ "steps": [
+  {
+   "id": "setup_civ",
+   "text": "Play as England",
+   "done_when": {
+    "field": "civ",
+    "op": "in",
+    "value": [
+     "CIVILIZATION_ENGLAND"
+    ]
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "civ",
+      "op": "exists"
+     },
+     {
+      "not": {
+       "field": "civ",
+       "op": "in",
+       "value": [
+        "CIVILIZATION_ENGLAND"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "frontier",
+   "text": "Settle a city near a strong rival",
+   "manual": true
+  },
+  {
+   "id": "reyna",
+   "text": "Establish Reyna in it",
+   "manual": true
+  },
+  {
+   "id": "flip",
+   "text": "Let loyalty hit zero",
+   "detail": "Remove loyalty sources; the city flips to free city.",
+   "manual": true
+  }
+ ]
+}

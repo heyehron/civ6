@@ -1,0 +1,57 @@
+{
+ "achievement": "stk3_achievement_06",
+ "title": "The City Ever-Shining",
+ "summary": "In Dramatic Ages mode, enter a Golden Age with 20 or more excess Era Score.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Community guide: 'excess' means at least 20 above the golden-age threshold.",
+  "Unverified: the threshold shown on the timeline already includes Dramatic Ages adjustments."
+ ],
+ "steps": [
+  {
+   "id": "setup_dramatic_ages",
+   "text": "Game mode on: Dramatic Ages",
+   "done_when": {
+    "field": "game_modes",
+    "op": "contains",
+    "value": "dramatic_ages"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "turn",
+      "op": "gte",
+      "value": 1
+     },
+     {
+      "field": "game_modes",
+      "op": "not_contains",
+      "value": "dramatic_ages"
+     }
+    ]
+   }
+  },
+  {
+   "id": "bank",
+   "text": "Bank era score late in the era",
+   "detail": "Hold back era-score moments (wonders, firsts) until near the era end.",
+   "manual": true
+  },
+  {
+   "id": "golden",
+   "text": "Enter a Golden Age",
+   "detail": "Overshoot the golden threshold by 20+.",
+   "done_when": {
+    "field": "age",
+    "op": "eq",
+    "value": "golden"
+   }
+  },
+  {
+   "id": "check",
+   "text": "Confirm the unlock popup",
+   "manual": true
+  }
+ ]
+}

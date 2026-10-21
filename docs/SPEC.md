@@ -1,6 +1,6 @@
 # Civ VI Achievement Advisor — Functional Specification
 
-Status: planning draft. Supersedes the two earlier drafts.
+Status: M1, M2, M4 (app side) and M5 built; M0 and M3 need testing on the user's PC.
 
 ## 1. Purpose and scope
 
@@ -10,10 +10,11 @@ A local desktop tool that:
 2. Lets the user pick a batch of target achievements and rejects incompatible picks.
 3. Produces the exact lobby setup for that batch.
 4. During play, reads exact game state from a UI-only Civ VI mod and shows the next action, progress and failure alerts on a second monitor.
+5. Offers an optional local AI assistant (Ollama) that answers with the app's own context and drafts playbooks.
 
 Non-goals:
 
-- No cloud LLM calls at runtime. Steam Web API is the only network call, and its result is cached so the app runs offline afterwards.
+- No cloud LLM calls at runtime. Steam is the only internet call, and its result is cached so the app runs offline afterwards. The AI assistant talks only to a local Ollama server (`localhost`).
 - No automated input to the game. The tool advises; the user plays.
 - No multiplayer support.
 
@@ -186,11 +187,17 @@ The playbooks hold the advice; nothing else in the system generates it. Each ach
 ```
 
 - Checks are declarative (`field` / `op` / `value`). They are never evaluated as Python code, because the JSON is user-editable data.
-- Supported ops: `eq`, `ne`, `lt`, `lte`, `gt`, `gte`, `contains`, `not_contains`, `count_gte`.
+- Supported ops: `eq`, `ne`, `lt`, `lte`, `gt`, `gte`, `contains`, `not_contains`, `count_gte`, `in`, `exists`. String comparison ignores case.
+- Conditions combine with `{"all": [...]}`, `{"any": [...]}` and `{"not": cond}`. `field` is a dotted path into `GameState.fields()` (for example `yields.faith` or `building_counts.BUILDING_SHOPPING_MALL`).
+- A missing field means "cannot track yet", never "failed".
+- `"manual": true` steps are ticked by the user on the In-game page. Ticks are stored per game in `~/.civ6advisor/progress.json`.
+- Optional step keys: `detail` (how-to text) and `final` (closing step; `win`, `goal`, `check`, `verify` and `confirm` ids are final automatically).
 - Progress = completed steps / total steps.
-- Next action = the first unfinished step across all targets, ordered by the nearest deadline.
+- Next action = the first open non-final step across all targets, ordered by the nearest deadline. Manual `lobby*`/`setup*` steps stop being candidates after turn 3.
 - Alert when a `fail_when` fires, or when the turn passes `deadline_turn − 5` with the step unfinished.
-- Playbooks are written by hand. Start with the user's first batch only.
+- Top-level keys: `title`, `summary`, `tips[]`, `author` (`hand`, `auto` or `ai-draft`) and `verified`.
+- Sources, in override order: automatic setup checks built from the constraints → `data/playbooks/` (committed) → `~/.civ6advisor/playbooks/` (the user's edits and AI drafts).
+- AI drafts are always saved with `author: ai-draft` and `verified: false`.
 
 ### 4.5 Game state — `mod/` and `src/state/`
 
@@ -199,7 +206,9 @@ The playbooks hold the advice; nothing else in the system generates it. Each ach
 - UI context only (`AffectsSavedGames=0`), so it does not change gameplay.
 - Hooks game events: turn start, tech and civic changes, city founded, district and wonder completed (any player), era change.
 - On each event, writes one line through `print()`: `CIV6ADV|{json}`. A small JSON serialiser is included in the mod because Civ's Lua has none.
-- Writes a full snapshot at turn start, and a delta for each event in between.
+- Writes a full snapshot at turn start and after each hooked event (debounced to one per frame). Lines carry `kind`: `snapshot`, `delta` (merged onto the last snapshot; the reader supports it, the mod does not send it yet), `hello` or `warning`.
+- Each API section is wrapped in `pcall`, so an API difference drops one field instead of breaking the export. Missing events are reported as `warning` lines.
+- Raw game names (`LEADER_TAMAR`, `MAPSIZE_DUEL`, `Shuffle.lua`) are normalised by `GameState.from_snapshot`.
 
 **Log reader (`src/state/log_source.py`)**
 
@@ -210,12 +219,21 @@ The playbooks hold the advice; nothing else in the system generates it. Each ach
 **`GameState` model (`src/state/model.py`)**
 
 ```
-turn, era, leader, civ, difficulty, map_type, map_size, speed,
-current_tech, current_civic, techs_known[], civics_known[],
-cities[{name, districts[], buildings[], wonders[]}],
+turn, game_id, era, start_era, leader, civ, difficulty, map_type, map_size, speed, game_modes[],
+current_tech, current_civic, techs_known[], civics_known[], government, policies[],
+cities[{name, capital, population, districts[], buildings[], wonders[], religion}],
 wonders_owned[], wonders_lost[]   # built by another player
-yields{science, culture, gold, faith}, victory_progress{}
+yields{science, culture, gold, faith}, balances{gold, faith},
+religion{type, name, majority_cities}, city_states[{name, suzerain, envoys, religion}],
+era_score, age, victory_progress{religious, religious_needed, diplomatic, tourism, capitals_held},
+at_war_with[], great_people[], units{}, resources{}, governors[{type, established}]
 ```
+
+Derived fields for playbooks: `difficulty_level`, `era_index`, `cities_count`, `total_population`,
+`max_city_population`, `districts_all`, `buildings_all`, `building_counts`, `district_counts`,
+`suzerain_of`, `city_states_met`, `city_states_count`, `city_states_following_my_religion`,
+`religion_founded`, `governors_appointed`, `governors_established`. The full list with descriptions is
+`FIELD_CATALOG` in `src/civ6advisor/state/model.py`.
 
 All sources produce this same model.
 
@@ -229,20 +247,44 @@ Only built if the Lua route fails verification (§8, milestone M0) or leaves a g
 - Model: `qwen2.5vl:3b` via Ollama (`localhost:11434`), JSON output, with a confidence value per field.
 - Frames are dropped while a request is still in flight; requests never queue.
 
-### 4.7 HUD — `src/ui/`
+### 4.7 App and HUD — `src/ui/`
 
-- Monitor selection: use any screen that is not `QGuiApplication.primaryScreen()`. If there is only one monitor, use a normal window.
-- Pre-game view: Steam sync status, achievement picker with conflict greying and ranking, lobby checklist.
-- In-game view (read-only):
+Pages (sidebar, Ctrl+1…6):
+
+| Page | Contents |
+|---|---|
+| Achievements | Filterable table with icons, rarity and fit score; conflict greying with reasons; detail panel showing read/inferred constraints; edit effort, risk, verified and notes (written back to `data/achievements.json`) |
+| Batch planner | Current targets, Required/Recommended/Free checklist (copy as text), suggested batches, season plan with no overlap, saved batches |
+| Playbooks | List per batch / written / all locked; JSON editor with live validation and rendered preview; AI draft and AI improve |
+| In game | Source (live Lua.log, demo snapshot, file); next action; per-target step tree with manual ticks; alerts; game-state summary |
+| Assistant | Streaming local AI chat; context toggles (batch, game state, playbook progress, focused achievement); quick prompts; optional screenshot |
+| Settings | Steam profile and optional API key (keyring), Lua.log path, Ollama server/model/temperature, planner weights, HUD monitor and opacity |
+
+- HUD monitor selection: use any screen that is not `QGuiApplication.primaryScreen()`. If there is only one monitor, use a normal window.
+- In-game HUD (read-only):
   1. Target stack: selected achievements with progress %.
   2. Hero panel: the next action, in large text.
   3. Alerts: failed or at-risk steps.
   4. Icon area: locally cached icons for the current step.
 - Background work runs in `QThread`/`QTimer`; no asyncio.
 
-### 4.8 Asset cache — `src/scraper/`
+### 4.8 Batch planner — `src/engine/planner.py`
 
-- Optional script that downloads icons from the Civ wiki into `~/.civ6advisor/assets/`.
+- For each anchor (a leader-win achievement, a leader with 2+ feats, or a game mode), it greedily adds compatible achievements: win conditions first, then that leader's feats, then feats for modes already on.
+- It respects the user's highest difficulty and skips additions that raise a plausibility warning (for example a late start era with a religious victory).
+- Value = Σ ln(100 / global %) ÷ effort. **Effort is a heuristic** from difficulty, victory type, map size, feat count, modes, lobby requirements and user risk.
+- *Best next game* re-ranks for diversity. *Season plan* repeatedly takes the best batch and removes its achievements.
+
+### 4.9 Local AI — `src/ai/`
+
+- `OllamaClient` streams `/api/chat`. `ChatRunner` runs it on a `QThread`, so the UI never blocks.
+- The system prompt states Online speed, Gathering Storm rules, and that draft or inferred constraints are unverified. Context is built from the app's own data (`prompts.py`).
+- Playbook drafting uses Ollama JSON mode. The reply is parsed (`extract_json`) and validated before it reaches the editor, and nothing is saved without the user pressing Save.
+- Screenshot questions grab the primary screen with Qt and need a vision model (`qwen2.5vl:3b`).
+
+### 4.10 Asset cache
+
+- Steam achievement icons are downloaded on first display into `~/.civ6advisor/assets/icons/`. A wiki icon scraper (`src/scraper/`) is not built.
 - Assets are copyrighted (Firaxis/2K). They are **never committed**, and the path is outside the repo.
 - The UI must work with no icons present (text fallback).
 - Steam achievement icons come from the schema URLs and are cached in the same place.
@@ -251,7 +293,7 @@ Only built if the Lua route fails verification (§8, milestone M0) or leaves a g
 
 **Pre-game**
 
-1. First run: enter the Steam API key and SteamID64; sync.
+1. First run: enter the Steam profile (custom URL name or SteamID64) and sync. An API key is optional.
 2. Pick targets. Incompatible ones grey out; the ranking suggests additions.
 3. Review the lobby checklist: Required / Recommended / Free.
 4. Ensure the advisor mod is enabled in Additional Content.
@@ -274,17 +316,19 @@ civ6/
 ├── data/
 │   ├── achievements.json
 │   └── playbooks/
-├── mod/                      # Civ VI UI-only mod (.modinfo + .lua)
+│   ├── leaders.json
+│   └── demo/                 # sample snapshot for testing playbooks
+├── mod/CIV6ADV/              # Civ VI UI-only mod (.modinfo + UI/*.xml, *.lua)
 ├── src/civ6advisor/
-│   ├── steam/
-│   ├── state/                # model, log_source, vision_source
-│   ├── engine/               # batch, playbook evaluation
-│   ├── ui/
-│   └── scraper/
-├── tests/
+│   ├── steam/                # sync + cache
+│   ├── state/                # model, log_source (vision_source not built)
+│   ├── engine/               # batch, planner, playbook
+│   ├── ai/                   # ollama client, prompts, Qt worker
+│   └── ui/                   # theme, widgets, pages/, hud
+├── tools/seed_dataset.py
+├── tests/                    # incl. Lua mod run against a mocked Civ API (needs lua5.1)
 ├── main.py
 └── requirements.txt          # PySide6, requests, keyring, pytest
-                              # (+ mss, pillow, ollama only if 4.6 is built)
 ```
 
 ## 7. Public repo rules
@@ -306,6 +350,8 @@ Each milestone is usable on its own. Do not start the next one until the accepta
 | M4 | Advisor | Playbooks for one real batch; the HUD shows the next action, progress and alerts during a full game |
 | M5 | Polish | Icon cache, HUD layout, optional hotkeys |
 | M6 | Vision fallback | Only if M0 or M3 exposed a gap |
+
+Current status: M0: mod written, not yet tested in game. M1: 320 entries drafted, none verified. M2: done. M3: reader and model done, the mod runs against a mocked API in tests; real-game test pending. M4: 28 hand playbooks plus auto setup checks; Batch A covered. M5: icons, HUD and theme done; hotkeys not built.
 
 ## 9. Open questions
 

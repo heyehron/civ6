@@ -1,0 +1,85 @@
+{
+ "achievement": "stk3_achievement_07",
+ "title": "No Light Without the Dark",
+ "summary": "In Dramatic Ages mode, as Georgia, have a Golden and a Dark policy active at the same time.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Unverified: exact Georgia mechanic in Dramatic Ages. Test in a quick game if unsure.",
+  "Pairs well with Dark Horse: plan dark ages deliberately."
+ ],
+ "steps": [
+  {
+   "id": "setup_civ",
+   "text": "Play as Georgia",
+   "done_when": {
+    "field": "civ",
+    "op": "in",
+    "value": [
+     "CIVILIZATION_GEORGIA"
+    ]
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "civ",
+      "op": "exists"
+     },
+     {
+      "not": {
+       "field": "civ",
+       "op": "in",
+       "value": [
+        "CIVILIZATION_GEORGIA"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "setup_dramatic_ages",
+   "text": "Game mode on: Dramatic Ages",
+   "done_when": {
+    "field": "game_modes",
+    "op": "contains",
+    "value": "dramatic_ages"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "turn",
+      "op": "gte",
+      "value": 1
+     },
+     {
+      "field": "game_modes",
+      "op": "not_contains",
+      "value": "dramatic_ages"
+     }
+    ]
+   }
+  },
+  {
+   "id": "dark_age",
+   "text": "Enter a Dark Age",
+   "detail": "Spend an era light on era score on purpose.",
+   "done_when": {
+    "field": "age",
+    "op": "eq",
+    "value": "dark"
+   }
+  },
+  {
+   "id": "dark_policy",
+   "text": "Slot a Dark policy",
+   "manual": true
+  },
+  {
+   "id": "golden_policy",
+   "text": "Keep it and add a Golden policy",
+   "detail": "Unverified: Georgia's ability lets dark policies persist into a golden age.",
+   "manual": true
+  }
+ ]
+}

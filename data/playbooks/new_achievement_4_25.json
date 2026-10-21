@@ -1,0 +1,91 @@
+{
+ "achievement": "new_achievement_4_25",
+ "title": "We Are The Champions",
+ "summary": "Religious victory with Zoroastrianism as your dominant religion while suzerain of Zanzibar.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Duel maps allow two religions, so you are not racing for the only prophet. Avoid Saladin (Arabia reserves a prophet).",
+  "If the AI founds first and takes the Zoroastrianism name, restart.",
+  "Unverified: a custom-named religion may not count as Zoroastrianism."
+ ],
+ "steps": [
+  {
+   "id": "lobby",
+   "text": "Lobby: Zanzibar is the only city-state in the pool",
+   "detail": "Advanced Setup → City-States: deselect all, select Zanzibar. Turn off non-religious victories.",
+   "manual": true
+  },
+  {
+   "id": "meet_zanzibar",
+   "text": "Meet Zanzibar",
+   "detail": "Scout early. If it never spawned, restart now while it is cheap.",
+   "done_when": {
+    "field": "city_states_met",
+    "op": "contains",
+    "value": "Zanzibar"
+   },
+   "deadline_turn": 20
+  },
+  {
+   "id": "found_zoroastrianism",
+   "text": "Found Zoroastrianism",
+   "detail": "Pick the name Zoroastrianism in the founding screen.",
+   "done_when": {
+    "field": "religion.type",
+    "op": "eq",
+    "value": "RELIGION_ZOROASTRIANISM"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "religion.type",
+      "op": "exists"
+     },
+     {
+      "field": "religion.type",
+      "op": "ne",
+      "value": "RELIGION_ZOROASTRIANISM"
+     }
+    ]
+   },
+   "deadline_turn": 55
+  },
+  {
+   "id": "dominant",
+   "text": "Make it dominant in your own cities",
+   "detail": "Your civ must count as following your religion.",
+   "done_when": {
+    "field": "victory_progress.religious",
+    "op": "gte",
+    "value": 1
+   }
+  },
+  {
+   "id": "suzerain",
+   "text": "Become suzerain of Zanzibar",
+   "detail": "Send envoys; Tamar gets a bonus envoy when the city-state follows her religion.",
+   "done_when": {
+    "field": "suzerain_of",
+    "op": "contains",
+    "value": "Zanzibar"
+   }
+  },
+  {
+   "id": "convert_rival",
+   "text": "Convert the rival civ",
+   "detail": "Apostles with Debater/Proselytizer, then Missionaries to finish.",
+   "done_when": {
+    "field": "victory_progress.religious",
+    "op": "gte",
+    "value": 2
+   }
+  },
+  {
+   "id": "win",
+   "text": "Win while still suzerain of Zanzibar",
+   "detail": "Check suzerainty on the turn before the final conversion.",
+   "manual": true
+  }
+ ]
+}

@@ -1,0 +1,58 @@
+{
+ "achievement": "raf_achievement_07",
+ "title": "Radiant Deeds, Bright as Sunshine",
+ "summary": "Win a regular game as Tamar.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Georgia's Golden Age bonuses favour era-score play (Unverified: exact numbers)."
+ ],
+ "steps": [
+  {
+   "id": "setup_leader",
+   "text": "Play as Tamar",
+   "detail": "Checked on turn 1 from the game data.",
+   "done_when": {
+    "field": "leader",
+    "op": "in",
+    "value": [
+     "LEADER_TAMAR"
+    ]
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "leader",
+      "op": "exists"
+     },
+     {
+      "not": {
+       "field": "leader",
+       "op": "in",
+       "value": [
+        "LEADER_TAMAR"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "holy_sites",
+   "text": "Holy Site in your first two cities",
+   "detail": "Georgia's Tsikhe walls and faith favour a religious game.",
+   "done_when": {
+    "field": "district_counts.DISTRICT_HOLY_SITE",
+    "op": "gte",
+    "value": 2
+   },
+   "deadline_turn": 40
+  },
+  {
+   "id": "win",
+   "text": "Win the game",
+   "detail": "Any victory type counts.",
+   "manual": true
+  }
+ ]
+}

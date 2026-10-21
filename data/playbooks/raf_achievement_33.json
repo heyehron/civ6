@@ -1,0 +1,33 @@
+{
+ "achievement": "raf_achievement_33",
+ "title": "Dark Horse",
+ "summary": "Win the game while you are in a Dark Age.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Risky: waiting for a dark age gives the AI time. Only hold if the AI cannot win first."
+ ],
+ "steps": [
+  {
+   "id": "near_win",
+   "text": "Get one step from victory",
+   "detail": "e.g. one conversion left for a religious win.",
+   "manual": true
+  },
+  {
+   "id": "dark",
+   "text": "Be in a Dark Age",
+   "detail": "Dramatic Ages makes dark ages frequent.",
+   "done_when": {
+    "field": "age",
+    "op": "eq",
+    "value": "dark"
+   }
+  },
+  {
+   "id": "win",
+   "text": "Trigger the win during the Dark Age",
+   "manual": true
+  }
+ ]
+}

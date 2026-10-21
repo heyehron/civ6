@@ -1,0 +1,34 @@
+{
+ "achievement": "new_achievement_3_24",
+ "title": "Oneth By Land Twoeth By Sea",
+ "summary": "Have an Army of land units and 2 Armadas.",
+ "author": "hand",
+ "verified": false,
+ "tips": [],
+ "steps": [
+  {
+   "id": "nationalism",
+   "text": "Unlock Nationalism (Corps/Fleets)",
+   "done_when": {
+    "field": "civics_known",
+    "op": "contains",
+    "value": "CIVIC_NATIONALISM"
+   }
+  },
+  {
+   "id": "mobilization",
+   "text": "Unlock Mobilization (Armies/Armadas)",
+   "done_when": {
+    "field": "civics_known",
+    "op": "contains",
+    "value": "CIVIC_MOBILIZATION"
+   }
+  },
+  {
+   "id": "form",
+   "text": "Form 1 Army and 2 Armadas",
+   "detail": "Military Academy / Shipyard speed this up.",
+   "manual": true
+  }
+ ]
+}

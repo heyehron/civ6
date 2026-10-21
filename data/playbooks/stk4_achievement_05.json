@@ -1,0 +1,51 @@
+{
+ "achievement": "stk4_achievement_05",
+ "title": "The Brave Live Forever",
+ "summary": "Recall a Hero 5 times in a single game.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Cheap heroes with short lifespans cycle fastest.",
+  "Unverified: whether one hero recalled 5 times counts."
+ ],
+ "steps": [
+  {
+   "id": "setup_heroes_and_legends",
+   "text": "Game mode on: Heroes And Legends",
+   "done_when": {
+    "field": "game_modes",
+    "op": "contains",
+    "value": "heroes_and_legends"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "turn",
+      "op": "gte",
+      "value": 1
+     },
+     {
+      "field": "game_modes",
+      "op": "not_contains",
+      "value": "heroes_and_legends"
+     }
+    ]
+   }
+  },
+  {
+   "id": "r1",
+   "text": "Recall 1",
+   "manual": true
+  },
+  {
+   "id": "r3",
+   "text": "Recall 3",
+   "manual": true
+  },
+  {
+   "id": "r5",
+   "text": "Recall 5",
+   "manual": true
+  }
+ ]
+}

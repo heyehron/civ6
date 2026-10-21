@@ -1,0 +1,46 @@
+{
+ "achievement": "stk5_achievement_06",
+ "title": "Limited Edition",
+ "summary": "Hire a unique unit from a Barbarian Clan.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Unverified: which clan types offer unique units."
+ ],
+ "steps": [
+  {
+   "id": "setup_barbarian_clans",
+   "text": "Game mode on: Barbarian Clans",
+   "done_when": {
+    "field": "game_modes",
+    "op": "contains",
+    "value": "barbarian_clans"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "turn",
+      "op": "gte",
+      "value": 1
+     },
+     {
+      "field": "game_modes",
+      "op": "not_contains",
+      "value": "barbarian_clans"
+     }
+    ]
+   }
+  },
+  {
+   "id": "find",
+   "text": "Find a clan camp",
+   "manual": true
+  },
+  {
+   "id": "hire",
+   "text": "Hire its unique unit",
+   "detail": "Some clans offer a unique unit once converted/upgraded.",
+   "manual": true
+  }
+ ]
+}

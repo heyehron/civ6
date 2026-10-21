@@ -1,0 +1,99 @@
+{
+ "achievement": "new_achievement_4_27",
+ "title": "Island Hopping",
+ "summary": "Domination victory on a Huge Island Plates map.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Huge maps default to 12 civs; consider fewer AI in Advanced Setup (still counts per description).",
+  "Unverified: whether reducing the civ count is allowed for this achievement."
+ ],
+ "steps": [
+  {
+   "id": "setup_size",
+   "text": "Map size: Huge",
+   "done_when": {
+    "field": "map_size",
+    "op": "eq",
+    "value": "huge"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "map_size",
+      "op": "exists"
+     },
+     {
+      "not": {
+       "field": "map_size",
+       "op": "in",
+       "value": [
+        "huge"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "setup_map",
+   "text": "Map type: Island Plates",
+   "done_when": {
+    "field": "map_type",
+    "op": "eq",
+    "value": "island_plates"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "map_type",
+      "op": "exists"
+     },
+     {
+      "not": {
+       "field": "map_type",
+       "op": "in",
+       "value": [
+        "island_plates"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "ships",
+   "text": "Get Shipbuilding",
+   "detail": "Navy is mandatory on Island Plates.",
+   "done_when": {
+    "field": "techs_known",
+    "op": "contains",
+    "value": "TECH_SHIPBUILDING"
+   },
+   "deadline_turn": 60
+  },
+  {
+   "id": "caps3",
+   "text": "Hold 3 original capitals",
+   "done_when": {
+    "field": "victory_progress.capitals_held",
+    "op": "gte",
+    "value": 3
+   }
+  },
+  {
+   "id": "caps6",
+   "text": "Hold 6 original capitals",
+   "done_when": {
+    "field": "victory_progress.capitals_held",
+    "op": "gte",
+    "value": 6
+   }
+  },
+  {
+   "id": "win",
+   "text": "Take the last capital",
+   "manual": true
+  }
+ ]
+}

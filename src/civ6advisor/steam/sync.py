@@ -11,14 +11,13 @@ import re
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from pathlib import Path
 
 import requests
 
+from ..config import HOME
+
 APPID = 289070
-HOME = Path.home() / ".civ6advisor"
 CACHE = HOME / "steam_cache.json"
-CONFIG = HOME / "config.json"
 KEYRING_SERVICE = "civ6advisor"
 GLOBAL_URL = "https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/"
 PLAYER_API_URL = "https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/"
@@ -114,16 +113,15 @@ def api_key() -> str | None:
         return None
 
 
-def load_config() -> dict:
-    try:
-        return json.loads(CONFIG.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return {}
-
-
-def save_config(cfg: dict) -> None:
-    HOME.mkdir(parents=True, exist_ok=True)
-    CONFIG.write_text(json.dumps(cfg, indent=1), encoding="utf-8")
+def set_api_key(key: str | None) -> None:
+    import keyring
+    if key:
+        keyring.set_password(KEYRING_SERVICE, "steam_api_key", key)
+    else:
+        try:
+            keyring.delete_password(KEYRING_SERVICE, "steam_api_key")
+        except keyring.errors.PasswordDeleteError:
+            pass
 
 
 def load_cache() -> SyncResult | None:

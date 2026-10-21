@@ -1,0 +1,43 @@
+{
+ "achievement": "raf_achievement_21",
+ "title": "Getting the Band Back Together",
+ "summary": "Unlock every Governor and have them all established before the Industrial Era.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Renaissance-era wonders/civics that grant titles help.",
+  "Fails once the Industrial era begins."
+ ],
+ "steps": [
+  {
+   "id": "appoint",
+   "text": "Appoint all 7 governors",
+   "detail": "Governor titles come from civics; prioritise civic routes with titles.",
+   "done_when": {
+    "field": "governors_appointed",
+    "op": "gte",
+    "value": 7
+   },
+   "fail_when": {
+    "field": "era_index",
+    "op": "gte",
+    "value": 4
+   }
+  },
+  {
+   "id": "establish",
+   "text": "All 7 established at once",
+   "detail": "Establishing takes turns; leave a margin.",
+   "done_when": {
+    "field": "governors_established",
+    "op": "gte",
+    "value": 7
+   },
+   "fail_when": {
+    "field": "era_index",
+    "op": "gte",
+    "value": 4
+   }
+  }
+ ]
+}

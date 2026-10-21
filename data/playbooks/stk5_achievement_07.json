@@ -1,0 +1,52 @@
+{
+ "achievement": "stk5_achievement_07",
+ "title": "Finder's Fee",
+ "summary": "Ransom 5 units from Barbarian Clans in a single game.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Keep gold for ransoms.",
+  "Unverified: which units can be captured and ransomed."
+ ],
+ "steps": [
+  {
+   "id": "setup_barbarian_clans",
+   "text": "Game mode on: Barbarian Clans",
+   "done_when": {
+    "field": "game_modes",
+    "op": "contains",
+    "value": "barbarian_clans"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "turn",
+      "op": "gte",
+      "value": 1
+     },
+     {
+      "field": "game_modes",
+      "op": "not_contains",
+      "value": "barbarian_clans"
+     }
+    ]
+   }
+  },
+  {
+   "id": "bait",
+   "text": "Let clans capture cheap units",
+   "detail": "Builders/Scouts near camps get captured.",
+   "manual": true
+  },
+  {
+   "id": "r3",
+   "text": "Ransom 3 units",
+   "manual": true
+  },
+  {
+   "id": "r5",
+   "text": "Ransom 5 units",
+   "manual": true
+  }
+ ]
+}

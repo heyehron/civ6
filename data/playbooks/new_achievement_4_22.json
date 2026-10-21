@@ -1,0 +1,22 @@
+{
+ "achievement": "new_achievement_4_22",
+ "title": "Silver Anniversary",
+ "summary": "Possess 6 Silver at the start of the turn.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Traded copies count toward the amount you possess (Unverified)."
+ ],
+ "steps": [
+  {
+   "id": "silver",
+   "text": "Own 6 Silver",
+   "detail": "Improve it, trade for it, or capture it.",
+   "done_when": {
+    "field": "resources.RESOURCE_SILVER",
+    "op": "gte",
+    "value": 6
+   }
+  }
+ ]
+}
