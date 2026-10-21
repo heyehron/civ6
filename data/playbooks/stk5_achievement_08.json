@@ -1,0 +1,57 @@
+{
+ "achievement": "stk5_achievement_08",
+ "title": "Frenemies",
+ "summary": "Hire, Bribe, Incite and Raid the same Barbarian Clan.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Do all four on one camp; note which one in your notes.",
+  "Unverified: whether raiding destroys the camp."
+ ],
+ "steps": [
+  {
+   "id": "setup_barbarian_clans",
+   "text": "Game mode on: Barbarian Clans",
+   "done_when": {
+    "field": "game_modes",
+    "op": "contains",
+    "value": "barbarian_clans"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "turn",
+      "op": "gte",
+      "value": 1
+     },
+     {
+      "field": "game_modes",
+      "op": "not_contains",
+      "value": "barbarian_clans"
+     }
+    ]
+   }
+  },
+  {
+   "id": "hire",
+   "text": "Hire from the clan",
+   "manual": true
+  },
+  {
+   "id": "bribe",
+   "text": "Bribe the clan",
+   "manual": true
+  },
+  {
+   "id": "incite",
+   "text": "Incite the clan",
+   "manual": true
+  },
+  {
+   "id": "raid",
+   "text": "Raid the clan",
+   "detail": "Raid last: it may end the relationship.",
+   "manual": true
+  }
+ ]
+}

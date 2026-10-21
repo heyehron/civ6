@@ -1,0 +1,74 @@
+{
+ "achievement": "raf_achievement_19",
+ "title": "Holy Righteous Queen Tamar",
+ "summary": "As Tamar, every city-state in the game follows the religion you founded.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "City-states you never meet still count. Explore fully.",
+  "Unverified: whether razed or conquered city-states drop out of 'every city-state'."
+ ],
+ "steps": [
+  {
+   "id": "setup_leader",
+   "text": "Play as Tamar",
+   "detail": "Checked on turn 1 from the game data.",
+   "done_when": {
+    "field": "leader",
+    "op": "in",
+    "value": [
+     "LEADER_TAMAR"
+    ]
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "leader",
+      "op": "exists"
+     },
+     {
+      "not": {
+       "field": "leader",
+       "op": "in",
+       "value": [
+        "LEADER_TAMAR"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "lobby_cs",
+   "text": "Keep the city-state count low",
+   "detail": "With Zanzibar as the only city-state, one conversion finishes this.",
+   "manual": true
+  },
+  {
+   "id": "found",
+   "text": "Found a religion",
+   "done_when": {
+    "field": "religion_founded",
+    "op": "eq",
+    "value": true
+   },
+   "deadline_turn": 55
+  },
+  {
+   "id": "convert_cs",
+   "text": "Convert the city-states",
+   "detail": "A Missionary next to the city-state, or passive pressure from a nearby Holy Site.",
+   "done_when": {
+    "field": "city_states_following_my_religion",
+    "op": "gte",
+    "value": 1
+   }
+  },
+  {
+   "id": "all_cs",
+   "text": "Every city-state follows you at once",
+   "detail": "Tracked as 1+ city-states; confirm all of them if more exist.",
+   "manual": true
+  }
+ ]
+}

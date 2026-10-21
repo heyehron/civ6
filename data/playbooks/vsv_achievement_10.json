@@ -1,0 +1,41 @@
+{
+ "achievement": "vsv_achievement_10",
+ "title": "The Art of Telling Plain Truths",
+ "summary": "Win a Diplomatic Victory.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Favor from suzerainties and alliances funds votes.",
+  "Aid requests and competitions (emergencies) grant points."
+ ],
+ "steps": [
+  {
+   "id": "congress",
+   "text": "World Congress active",
+   "detail": "Starts in the Medieval era.",
+   "done_when": {
+    "field": "era_index",
+    "op": "gte",
+    "value": 2
+   }
+  },
+  {
+   "id": "dvp10",
+   "text": "Reach 10 diplomatic victory points",
+   "done_when": {
+    "field": "victory_progress.diplomatic",
+    "op": "gte",
+    "value": 10
+   }
+  },
+  {
+   "id": "dvp20",
+   "text": "Reach 20 diplomatic victory points",
+   "done_when": {
+    "field": "victory_progress.diplomatic",
+    "op": "gte",
+    "value": 20
+   }
+  }
+ ]
+}

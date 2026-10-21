@@ -1,0 +1,313 @@
+{
+ "_note": "Leader and civ ids follow the game naming convention but are unverified until the M3 log check.",
+ "leaders": {
+  "LEADER_T_ROOSEVELT": {
+   "name": "Teddy Roosevelt (Bull Moose)",
+   "civ": "CIVILIZATION_AMERICA"
+  },
+  "LEADER_T_ROOSEVELT_ROUGHRIDER": {
+   "name": "Teddy Roosevelt (Rough Rider)",
+   "civ": "CIVILIZATION_AMERICA"
+  },
+  "LEADER_LINCOLN": {
+   "name": "Abraham Lincoln",
+   "civ": "CIVILIZATION_AMERICA"
+  },
+  "LEADER_SALADIN": {
+   "name": "Saladin (Vizier)",
+   "civ": "CIVILIZATION_ARABIA"
+  },
+  "LEADER_SALADIN_ALT": {
+   "name": "Saladin (Sultan)",
+   "civ": "CIVILIZATION_ARABIA"
+  },
+  "LEADER_JOHN_CURTIN": {
+   "name": "John Curtin",
+   "civ": "CIVILIZATION_AUSTRALIA"
+  },
+  "LEADER_MONTEZUMA": {
+   "name": "Montezuma",
+   "civ": "CIVILIZATION_AZTEC"
+  },
+  "LEADER_HAMMURABI": {
+   "name": "Hammurabi",
+   "civ": "CIVILIZATION_BABYLON_STK"
+  },
+  "LEADER_PEDRO": {
+   "name": "Pedro II",
+   "civ": "CIVILIZATION_BRAZIL"
+  },
+  "LEADER_BASIL": {
+   "name": "Basil II",
+   "civ": "CIVILIZATION_BYZANTIUM"
+  },
+  "LEADER_THEODORA": {
+   "name": "Theodora",
+   "civ": "CIVILIZATION_BYZANTIUM"
+  },
+  "LEADER_LAURIER": {
+   "name": "Wilfrid Laurier",
+   "civ": "CIVILIZATION_CANADA"
+  },
+  "LEADER_QIN": {
+   "name": "Qin Shi Huang (Mandate of Heaven)",
+   "civ": "CIVILIZATION_CHINA"
+  },
+  "LEADER_QIN_ALT": {
+   "name": "Qin Shi Huang (Unifier)",
+   "civ": "CIVILIZATION_CHINA"
+  },
+  "LEADER_KUBLAI_KHAN_CHINA": {
+   "name": "Kublai Khan (China)",
+   "civ": "CIVILIZATION_CHINA"
+  },
+  "LEADER_WU_ZETIAN": {
+   "name": "Wu Zetian",
+   "civ": "CIVILIZATION_CHINA"
+  },
+  "LEADER_YONGLE": {
+   "name": "Yongle",
+   "civ": "CIVILIZATION_CHINA"
+  },
+  "LEADER_POUNDMAKER": {
+   "name": "Poundmaker",
+   "civ": "CIVILIZATION_CREE"
+  },
+  "LEADER_WILHELMINA": {
+   "name": "Wilhelmina",
+   "civ": "CIVILIZATION_NETHERLANDS"
+  },
+  "LEADER_CLEOPATRA": {
+   "name": "Cleopatra (Egyptian)",
+   "civ": "CIVILIZATION_EGYPT"
+  },
+  "LEADER_CLEOPATRA_ALT": {
+   "name": "Cleopatra (Ptolemaic)",
+   "civ": "CIVILIZATION_EGYPT"
+  },
+  "LEADER_RAMSES": {
+   "name": "Ramses II",
+   "civ": "CIVILIZATION_EGYPT"
+  },
+  "LEADER_VICTORIA": {
+   "name": "Victoria (Age of Empire)",
+   "civ": "CIVILIZATION_ENGLAND"
+  },
+  "LEADER_VICTORIA_ALT": {
+   "name": "Victoria (Age of Steam)",
+   "civ": "CIVILIZATION_ENGLAND"
+  },
+  "LEADER_ELIZABETH": {
+   "name": "Elizabeth I",
+   "civ": "CIVILIZATION_ENGLAND"
+  },
+  "LEADER_ELEANOR_ENGLAND": {
+   "name": "Eleanor of Aquitaine (England)",
+   "civ": "CIVILIZATION_ENGLAND"
+  },
+  "LEADER_MENELIK": {
+   "name": "Menelik II",
+   "civ": "CIVILIZATION_ETHIOPIA"
+  },
+  "LEADER_CATHERINE_DE_MEDICI": {
+   "name": "Catherine de Medici (Black Queen)",
+   "civ": "CIVILIZATION_FRANCE"
+  },
+  "LEADER_CATHERINE_DE_MEDICI_ALT": {
+   "name": "Catherine de Medici (Magnificence)",
+   "civ": "CIVILIZATION_FRANCE"
+  },
+  "LEADER_ELEANOR_FRANCE": {
+   "name": "Eleanor of Aquitaine (France)",
+   "civ": "CIVILIZATION_FRANCE"
+  },
+  "LEADER_AMBIORIX": {
+   "name": "Ambiorix",
+   "civ": "CIVILIZATION_GAUL"
+  },
+  "LEADER_TAMAR": {
+   "name": "Tamar",
+   "civ": "CIVILIZATION_GEORGIA"
+  },
+  "LEADER_BARBAROSSA": {
+   "name": "Frederick Barbarossa",
+   "civ": "CIVILIZATION_GERMANY"
+  },
+  "LEADER_LUDWIG": {
+   "name": "Ludwig II",
+   "civ": "CIVILIZATION_GERMANY"
+  },
+  "LEADER_SIMON_BOLIVAR": {
+   "name": "Simón Bolívar",
+   "civ": "CIVILIZATION_GRAN_COLOMBIA"
+  },
+  "LEADER_PERICLES": {
+   "name": "Pericles",
+   "civ": "CIVILIZATION_GREECE"
+  },
+  "LEADER_GORGO": {
+   "name": "Gorgo",
+   "civ": "CIVILIZATION_GREECE"
+  },
+  "LEADER_MATTHIAS_CORVINUS": {
+   "name": "Matthias Corvinus",
+   "civ": "CIVILIZATION_HUNGARY"
+  },
+  "LEADER_PACHACUTI": {
+   "name": "Pachacuti",
+   "civ": "CIVILIZATION_INCA"
+  },
+  "LEADER_GANDHI": {
+   "name": "Gandhi",
+   "civ": "CIVILIZATION_INDIA"
+  },
+  "LEADER_CHANDRAGUPTA": {
+   "name": "Chandragupta",
+   "civ": "CIVILIZATION_INDIA"
+  },
+  "LEADER_GITARJA": {
+   "name": "Gitarja",
+   "civ": "CIVILIZATION_INDONESIA"
+  },
+  "LEADER_HOJO": {
+   "name": "Hojo Tokimune",
+   "civ": "CIVILIZATION_JAPAN"
+  },
+  "LEADER_TOKUGAWA": {
+   "name": "Tokugawa",
+   "civ": "CIVILIZATION_JAPAN"
+  },
+  "LEADER_JAYAVARMAN": {
+   "name": "Jayavarman VII",
+   "civ": "CIVILIZATION_KHMER"
+  },
+  "LEADER_MVEMBA": {
+   "name": "Mvemba a Nzinga",
+   "civ": "CIVILIZATION_KONGO"
+  },
+  "LEADER_NZINGA_MBANDE": {
+   "name": "Nzinga Mbande",
+   "civ": "CIVILIZATION_KONGO"
+  },
+  "LEADER_SEONDEOK": {
+   "name": "Seondeok",
+   "civ": "CIVILIZATION_KOREA"
+  },
+  "LEADER_SEJONG": {
+   "name": "Sejong",
+   "civ": "CIVILIZATION_KOREA"
+  },
+  "LEADER_ALEXANDER": {
+   "name": "Alexander",
+   "civ": "CIVILIZATION_MACEDON"
+  },
+  "LEADER_MANSA_MUSA": {
+   "name": "Mansa Musa",
+   "civ": "CIVILIZATION_MALI"
+  },
+  "LEADER_SUNDIATA_KEITA": {
+   "name": "Sundiata Keita",
+   "civ": "CIVILIZATION_MALI"
+  },
+  "LEADER_KUPE": {
+   "name": "Kupe",
+   "civ": "CIVILIZATION_MAORI"
+  },
+  "LEADER_LAUTARO": {
+   "name": "Lautaro",
+   "civ": "CIVILIZATION_MAPUCHE"
+  },
+  "LEADER_LADY_SIX_SKY": {
+   "name": "Lady Six Sky",
+   "civ": "CIVILIZATION_MAYA"
+  },
+  "LEADER_GENGHIS_KHAN": {
+   "name": "Genghis Khan",
+   "civ": "CIVILIZATION_MONGOLIA"
+  },
+  "LEADER_KUBLAI_KHAN_MONGOLIA": {
+   "name": "Kublai Khan (Mongolia)",
+   "civ": "CIVILIZATION_MONGOLIA"
+  },
+  "LEADER_HARDRADA": {
+   "name": "Harald Hardrada (Konge)",
+   "civ": "CIVILIZATION_NORWAY"
+  },
+  "LEADER_HARALD_ALT": {
+   "name": "Harald Hardrada (Varangian)",
+   "civ": "CIVILIZATION_NORWAY"
+  },
+  "LEADER_AMANITORE": {
+   "name": "Amanitore",
+   "civ": "CIVILIZATION_NUBIA"
+  },
+  "LEADER_SULEIMAN": {
+   "name": "Suleiman (Kanuni)",
+   "civ": "CIVILIZATION_OTTOMAN"
+  },
+  "LEADER_SULEIMAN_ALT": {
+   "name": "Suleiman (Muhteşem)",
+   "civ": "CIVILIZATION_OTTOMAN"
+  },
+  "LEADER_CYRUS": {
+   "name": "Cyrus",
+   "civ": "CIVILIZATION_PERSIA"
+  },
+  "LEADER_NADER_SHAH": {
+   "name": "Nader Shah",
+   "civ": "CIVILIZATION_PERSIA"
+  },
+  "LEADER_DIDO": {
+   "name": "Dido",
+   "civ": "CIVILIZATION_PHOENICIA"
+  },
+  "LEADER_JADWIGA": {
+   "name": "Jadwiga",
+   "civ": "CIVILIZATION_POLAND"
+  },
+  "LEADER_JOAO_III": {
+   "name": "João III",
+   "civ": "CIVILIZATION_PORTUGAL"
+  },
+  "LEADER_TRAJAN": {
+   "name": "Trajan",
+   "civ": "CIVILIZATION_ROME"
+  },
+  "LEADER_JULIUS_CAESAR": {
+   "name": "Julius Caesar",
+   "civ": "CIVILIZATION_ROME"
+  },
+  "LEADER_PETER_GREAT": {
+   "name": "Peter the Great",
+   "civ": "CIVILIZATION_RUSSIA"
+  },
+  "LEADER_ROBERT_THE_BRUCE": {
+   "name": "Robert the Bruce",
+   "civ": "CIVILIZATION_SCOTLAND"
+  },
+  "LEADER_TOMYRIS": {
+   "name": "Tomyris",
+   "civ": "CIVILIZATION_SCYTHIA"
+  },
+  "LEADER_PHILIP_II": {
+   "name": "Philip II",
+   "civ": "CIVILIZATION_SPAIN"
+  },
+  "LEADER_GILGAMESH": {
+   "name": "Gilgamesh",
+   "civ": "CIVILIZATION_SUMERIA"
+  },
+  "LEADER_KRISTINA": {
+   "name": "Kristina",
+   "civ": "CIVILIZATION_SWEDEN"
+  },
+  "LEADER_LADY_TRIEU": {
+   "name": "Bà Triệu",
+   "civ": "CIVILIZATION_VIETNAM"
+  },
+  "LEADER_SHAKA": {
+   "name": "Shaka",
+   "civ": "CIVILIZATION_ZULU"
+  }
+ }
+}

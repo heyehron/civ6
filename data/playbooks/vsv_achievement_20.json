@@ -1,0 +1,30 @@
+{
+ "achievement": "vsv_achievement_20",
+ "title": "Nobel-er than the Noblest",
+ "summary": "First place in all three Nobel Prizes in one game.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Unverified: these are random special sessions; they may not all appear."
+ ],
+ "steps": [
+  {
+   "id": "physics",
+   "text": "Win the Nobel Prize in Physics",
+   "detail": "Science special session.",
+   "manual": true
+  },
+  {
+   "id": "literature",
+   "text": "Win the Nobel Prize in Literature",
+   "detail": "Great Writers/works special session.",
+   "manual": true
+  },
+  {
+   "id": "peace",
+   "text": "Win the Nobel Peace Prize",
+   "detail": "Diplomatic favor/peace special session.",
+   "manual": true
+  }
+ ]
+}

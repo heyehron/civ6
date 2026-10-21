@@ -1,0 +1,44 @@
+{
+ "achievement": "stk4_achievement_04",
+ "title": "Clash of the Titans",
+ "summary": "Kill an enemy Hero with your Hero.",
+ "author": "hand",
+ "verified": false,
+ "tips": [],
+ "steps": [
+  {
+   "id": "setup_heroes_and_legends",
+   "text": "Game mode on: Heroes And Legends",
+   "done_when": {
+    "field": "game_modes",
+    "op": "contains",
+    "value": "heroes_and_legends"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "turn",
+      "op": "gte",
+      "value": 1
+     },
+     {
+      "field": "game_modes",
+      "op": "not_contains",
+      "value": "heroes_and_legends"
+     }
+    ]
+   }
+  },
+  {
+   "id": "enemy_hero",
+   "text": "Spot an AI hero",
+   "manual": true
+  },
+  {
+   "id": "kill",
+   "text": "Finish it with your hero",
+   "detail": "Wound it with other units first; let your hero land the kill.",
+   "manual": true
+  }
+ ]
+}

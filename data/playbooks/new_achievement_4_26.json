@@ -1,0 +1,32 @@
+{
+ "achievement": "new_achievement_4_26",
+ "title": "Selfie",
+ "summary": "Culture victory with your own leader also in the game as an opponent.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Unverified: lobby option name for duplicate leaders."
+ ],
+ "steps": [
+  {
+   "id": "lobby",
+   "text": "Add your leader as an AI",
+   "detail": "Advanced Setup: allow duplicate leaders, then pick your leader for an AI slot.",
+   "manual": true
+  },
+  {
+   "id": "tourism",
+   "text": "Build tourism",
+   "done_when": {
+    "field": "victory_progress.tourism",
+    "op": "gte",
+    "value": 100
+   }
+  },
+  {
+   "id": "win",
+   "text": "Win a Culture victory",
+   "manual": true
+  }
+ ]
+}

@@ -1,0 +1,31 @@
+{
+ "achievement": "raf_achievement_29",
+ "title": "Shopping Spree",
+ "summary": "Have 10 Shopping Malls at the same time.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Unverified: building id BUILDING_SHOPPING_MALL."
+ ],
+ "steps": [
+  {
+   "id": "cities10",
+   "text": "Own 10+ cities",
+   "done_when": {
+    "field": "cities_count",
+    "op": "gte",
+    "value": 10
+   }
+  },
+  {
+   "id": "malls",
+   "text": "Build 10 Shopping Malls",
+   "detail": "Commercial Hub/Harbor tier-3 building (Rise and Fall).",
+   "done_when": {
+    "field": "building_counts.BUILDING_SHOPPING_MALL",
+    "op": "gte",
+    "value": 10
+   }
+  }
+ ]
+}

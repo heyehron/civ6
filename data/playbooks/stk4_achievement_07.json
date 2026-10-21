@@ -1,0 +1,62 @@
+{
+ "achievement": "stk4_achievement_07",
+ "title": "The Dream Team",
+ "summary": "Claim 5 Heroes in a single game.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Larger maps and fewer AI hero-hunters help.",
+  "Unverified: exact hero discovery requirements per hero."
+ ],
+ "steps": [
+  {
+   "id": "setup_heroes_and_legends",
+   "text": "Game mode on: Heroes And Legends",
+   "done_when": {
+    "field": "game_modes",
+    "op": "contains",
+    "value": "heroes_and_legends"
+   },
+   "fail_when": {
+    "all": [
+     {
+      "field": "turn",
+      "op": "gte",
+      "value": 1
+     },
+     {
+      "field": "game_modes",
+      "op": "not_contains",
+      "value": "heroes_and_legends"
+     }
+    ]
+   }
+  },
+  {
+   "id": "faith",
+   "text": "Build a strong faith economy",
+   "detail": "Heroes are claimed with faith.",
+   "done_when": {
+    "field": "yields.faith",
+    "op": "gte",
+    "value": 15
+   },
+   "deadline_turn": 70
+  },
+  {
+   "id": "h1",
+   "text": "Claim hero 1",
+   "manual": true
+  },
+  {
+   "id": "h3",
+   "text": "Claim hero 3",
+   "manual": true
+  },
+  {
+   "id": "h5",
+   "text": "Claim hero 5",
+   "manual": true
+  }
+ ]
+}

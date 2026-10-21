@@ -1,0 +1,23 @@
+{
+ "achievement": "vsv_achievement_21",
+ "title": "Airing Your Grievances",
+ "summary": "Win a Diplomatic Victory resolution and use it to reduce another player's progress.",
+ "author": "hand",
+ "verified": false,
+ "tips": [
+  "Needs diplomatic victory enabled in the lobby."
+ ],
+ "steps": [
+  {
+   "id": "favor",
+   "text": "Bank diplomatic favor",
+   "manual": true
+  },
+  {
+   "id": "resolution",
+   "text": "Win the Diplomatic Victory resolution",
+   "detail": "Vote the option that removes points from the leader.",
+   "manual": true
+  }
+ ]
+}
