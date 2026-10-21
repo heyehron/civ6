@@ -1,7 +1,9 @@
-"""Read-only HUD for the second monitor (SPEC §4.7). Civ runs native full screen, so no input here."""
+"""Read-only HUD (SPEC §4.7). A normal window with a title bar, so it can be dragged and resized
+anywhere. It stays on top, remembers its position and size, and has no controls that need clicking
+during play."""
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QRect, Qt, QTimer
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QProgressBar, QVBoxLayout, QWidget
 
@@ -11,12 +13,15 @@ from .theme import C
 
 class Hud(QWidget):
     def __init__(self, app: AppState):
-        super().__init__(None, Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        super().__init__(None, Qt.Window | Qt.WindowStaysOnTopHint)
         self.app = app
-        self.setWindowTitle("Civ VI Advisor HUD")
-        self.setAttribute(Qt.WA_ShowWithoutActivating)
+        self.setWindowTitle("Civ VI Advisor HUD  ·  drag the title bar to move, drag edges to resize")
+        self.setMinimumSize(320, 360)
+        self._save_timer = QTimer(self)
+        self._save_timer.setSingleShot(True)
+        self._save_timer.timeout.connect(self._save_geometry)
         self.setStyleSheet(f"""
-            QWidget#HudRoot {{ background: {C['bg']}; border: 1px solid {C['border']}; border-radius: 14px; }}
+            QWidget#HudRoot {{ background: {C['bg']}; border: none; }}
             QLabel {{ background: transparent; color: {C['text']}; }}
             QLabel#HudTurn {{ color: {C['muted']}; font-size: 15px; }}
             QLabel#HudKicker {{ color: {C['gold']}; font-size: 13px; font-weight: 700; letter-spacing: 2px; }}
@@ -67,7 +72,7 @@ class Hud(QWidget):
     def _apply_settings(self) -> None:
         self.setWindowOpacity(self.app.settings.hud_opacity)
 
-    def place(self) -> None:
+    def default_geometry(self) -> QRect:
         screens = QGuiApplication.screens()
         primary = QGuiApplication.primaryScreen()
         idx = self.app.settings.hud_screen
@@ -77,14 +82,30 @@ class Hud(QWidget):
             others = [s for s in screens if s is not primary]
             screen = others[0] if others else primary
         geo = screen.availableGeometry()
-        if screen is primary and len(screens) == 1:
-            # Single monitor: behave as a normal resizable window instead of covering the game.
-            self.setWindowFlags(Qt.Window)
-            self.resize(520, 760)
-            self.move(geo.right() - 540, geo.top() + 40)
-        else:
-            w = min(620, geo.width() // 3)
-            self.setGeometry(geo.right() - w - 20, geo.top() + 20, w, geo.height() - 40)
+        w = min(560, max(360, geo.width() // 3))
+        h = min(geo.height() - 80, 820)
+        return QRect(geo.right() - w - 20, geo.top() + 40, w, h)
+
+    def place(self, reset: bool = False) -> None:
+        """Restore the last position if it is still on a connected screen, else use the default."""
+        saved = self.app.settings.hud_geometry
+        rect = QRect(*saved) if len(saved) == 4 and not reset else None
+        if rect is not None and not any(s.availableGeometry().intersects(rect) for s in QGuiApplication.screens()):
+            rect = None
+        self.setGeometry(rect or self.default_geometry())
+
+    def _save_geometry(self) -> None:
+        g = self.geometry()
+        self.app.settings.hud_geometry = [g.x(), g.y(), g.width(), g.height()]
+        self.app.settings.save()
+
+    def moveEvent(self, e) -> None:
+        super().moveEvent(e)
+        self._save_timer.start(500)
+
+    def resizeEvent(self, e) -> None:
+        super().resizeEvent(e)
+        self._save_timer.start(500)
 
     @staticmethod
     def _clear(layout) -> None:

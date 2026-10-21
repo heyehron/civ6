@@ -10,12 +10,14 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QWidget,
 )
 
+from ... import config
 from ...dataset import DATA_DIR
+from ...state import diagnose
 from ...state.log_source import FileSource, LogSource
 from ..appstate import AppState
 from ..hud import Hud
 from ..theme import C
-from ..widgets import Card, PageHeader, button, label
+from ..widgets import Card, PageHeader, button, clear_layout, label
 
 DEMO = DATA_DIR / "demo" / "batch_a_turn40.json"
 
@@ -39,9 +41,24 @@ class InGamePage(QWidget):
         self.run_btn = button("Connect", "Primary", slot=self.toggle_source)
         self.header.actions.addWidget(self.run_btn)
         self.header.actions.addWidget(button("Open HUD", slot=self.open_hud))
+        self.header.actions.addWidget(button("Check setup", slot=self.check_setup))
         lay.addWidget(self.header)
-        self.status = label("Not connected", "Muted")
+        self.status = label("Not connected", "Muted", wrap=True)
         lay.addWidget(self.status)
+
+        self.diag = Card("Setup check")
+        self.diag_body = QVBoxLayout()
+        self.diag_body.setSpacing(6)
+        self.diag.body.addLayout(self.diag_body)
+        drow = QHBoxLayout()
+        drow.addWidget(button("Install / update mod", "Primary", slot=self.install_mod))
+        drow.addWidget(button("Re-check", slot=self.check_setup))
+        drow.addWidget(button("Reset HUD position", "Ghost", slot=self.reset_hud))
+        drow.addStretch(1)
+        drow.addWidget(button("Hide", "Ghost", slot=self.diag.hide))
+        self.diag.body.addLayout(drow)
+        self.diag.hide()
+        lay.addWidget(self.diag)
 
         hero = Card(name="Hero")
         hero.body.addWidget(label("NEXT ACTION", "SectionTitle"))
@@ -121,8 +138,42 @@ class InGamePage(QWidget):
     def open_hud(self) -> None:
         if self.hud is None:
             self.hud = Hud(self.app)
-        self.hud.place()
+            self.hud.place()
         self.hud.show()
+        self.hud.raise_()
+
+    def reset_hud(self) -> None:
+        if self.hud is None:
+            self.hud = Hud(self.app)
+        self.hud.place(reset=True)
+        self.hud.show()
+        self.hud.raise_()
+
+    def check_setup(self) -> None:
+        clear_layout(self.diag_body)
+        colours = {"ok": C["green"], "warn": C["amber"], "fail": C["red"], "info": C["muted"]}
+        marks = {"ok": "✓", "warn": "⚠", "fail": "✖", "info": "•"}
+        for c in diagnose.run(self.app.settings.lua_log):
+            text = f"{marks[c.level]} {c.text}" + (f"<br><span style='color:{C['faint']}'>→ {c.fix}</span>" if c.fix else "")
+            lab = label(text, wrap=True)
+            lab.setTextFormat(Qt.RichText)
+            lab.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            lab.setStyleSheet(f"color: {colours[c.level]}; background: transparent;")
+            self.diag_body.addWidget(lab)
+        self.diag.show()
+
+    def install_mod(self) -> None:
+        civ = config.find_civ_dir()
+        if civ is None:
+            self.app.toast.emit("error", "Civ VI's user folder was not found. Start Civ VI once, then try again.")
+            return
+        try:
+            dest = diagnose.install_mod(civ)
+        except OSError as exc:
+            self.app.toast.emit("error", f"Could not install the mod: {exc}")
+            return
+        self.app.toast.emit("success", f"Mod installed to {dest}. Enable it under Additional Content, then start a game.")
+        self.check_setup()
 
     # Rendering --------------------------------------------------------------------------
     def refresh(self) -> None:

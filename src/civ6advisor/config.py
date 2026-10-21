@@ -14,11 +14,29 @@ USER_PLAYBOOKS = HOME / "playbooks"
 SETTINGS = HOME / "config.json"
 
 
+def civ_dir_candidates() -> list[Path]:
+    """Where 'My Games/Sid Meier's Civilization VI' may live. Documents is often redirected to OneDrive."""
+    home = Path.home()
+    bases = [home / "Documents", home / "OneDrive" / "Documents", home / "OneDrive - Personal" / "Documents"]
+    for env in ("OneDrive", "OneDriveConsumer", "OneDriveCommercial"):
+        if os.environ.get(env):
+            bases.append(Path(os.environ[env]) / "Documents")
+    seen, out = set(), []
+    for b in bases:
+        p = b / "My Games" / "Sid Meier's Civilization VI"
+        if p not in seen:
+            seen.add(p)
+            out.append(p)
+    return out
+
+
+def find_civ_dir() -> Path | None:
+    return next((p for p in civ_dir_candidates() if p.exists()), None)
+
+
 def default_lua_log() -> str:
-    docs = Path.home() / "Documents"
-    onedrive = Path.home() / "OneDrive" / "Documents"
-    base = onedrive if onedrive.exists() and not docs.exists() else docs
-    return str(base / "My Games" / "Sid Meier's Civilization VI" / "Logs" / "Lua.log")
+    base = find_civ_dir() or civ_dir_candidates()[0]
+    return str(base / "Logs" / "Lua.log")
 
 
 @dataclass
@@ -34,6 +52,7 @@ class Settings:
     weight_risk: float = 0.5
     hud_screen: int = -1  # -1 = first non-primary screen
     hud_opacity: float = 0.92
+    hud_geometry: list = field(default_factory=list)  # [x, y, w, h] remembered between runs
     show_scenarios: bool = True
 
     @classmethod
