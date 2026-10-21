@@ -69,10 +69,12 @@ Vision fallback (optional) plugs in as another `GameState` source next to the lo
 
 ### 4.1 Steam sync — `src/steam/`
 
-- `GetSchemaForGame` (AppID 289070): achievement internal ID (`apiname`), display name, description and icon URL.
-- `GetPlayerAchievements`: unlock status per `apiname`.
+- Player status: the community XML `steamcommunity.com/{id|profiles}/<profile>/stats/289070/achievements/?xml=1` gives `apiname`, name, description, icon and unlock state, and needs no API key. Always add a unique query parameter, because the endpoint can serve a stale cached copy.
+- Optional: if an API key is in the OS credential store (`keyring`, service `civ6advisor`), `GetPlayerAchievements` is used instead.
+- Rarity: `ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2?gameid=289070`, which needs no key. The `...ForGame` name returns 404.
 - Requires the user's Steam profile **Game details** to be public.
-- API key is stored in the OS credential store via `keyring`. SteamID64 is stored in a plain config file (not secret).
+- The profile name or SteamID64 is stored in `~/.civ6advisor/config.json` (not secret).
+- All apinames are lowercased; Steam mixes case between endpoints.
 - The last successful response is cached to `~/.civ6advisor/steam_cache.json`. If the network fails, the cache is used and the UI shows a "last synced" timestamp.
 - Unlocked achievements are hidden from the picker (toggle to show them).
 
@@ -99,12 +101,19 @@ The single source of truth. It is committed to git as JSON, not as a binary `.db
     "game_modes_required":  [],
     "game_modes_forbidden": [],
     "scenario":      null,
-    "turn_limit":    null
+    "turn_limit":    null,
+    "turn_min":      null,
+    "requires_win":  false,
+    "choices":       {},
+    "lobby_required": [],
+    "multiplayer":   false,
+    "multi_game":    false
   },
   "effort": 1,
   "risk": 1,
   "playbook": "playbooks/ACHIEVEMENT_XYZ.json",
   "verified": false,
+  "inferred": [],
   "notes": ""
 }
 ```
@@ -112,6 +121,13 @@ The single source of truth. It is committed to git as JSON, not as a binary `.db
 Rules:
 
 - `null` or an empty list means unconstrained.
+- `turn_min`: the game must end after this turn. Conflicts with a `turn_limit` at or below it.
+- `requires_win`: the game must be won. `victory` additionally fixes the victory type.
+- `choices`: exclusive in-game picks such as `secret_society`, `religion_name` or `scenario_side`. Two different values for one key conflict.
+- `lobby_required`: other lobby settings, such as a city-state pool, a specific AI opponent or a natural wonder.
+- `multiplayer: true` is greyed out (out of scope). `multi_game: true` progresses across games.
+- `inferred` lists the constraint fields that were inferred rather than read from the description.
+- `civ` constraints resolve to leaders through `data/leaders.json`.
 - `effort` and `risk` are 1–5 and are set by the user.
 - `verified: false` entries are shown with a warning. Initial tagging may be LLM-drafted offline, but only user-verified entries count as trusted.
 - At startup the app builds an in-memory or SQLite index from the JSON. The `.db` file is never committed.
@@ -132,10 +148,12 @@ UI behaviour: after each pick, achievements that would conflict are greyed out, 
 Ranking of the remaining candidates:
 
 ```
-score = overlap_gain − risk_penalty
+score = rarity + overlap_gain − risk_penalty
+rarity       = ln(100 / global unlock %)
 overlap_gain = number of currently selected targets the candidate shares a
                constrained attribute with
 risk_penalty = weight × (batch risk after adding − batch risk before)
+batch risk   = sum of member risk (default 2 when unset)
 ```
 
 With ≈300 items this is computed instantly. Algorithmic complexity is not a concern.
