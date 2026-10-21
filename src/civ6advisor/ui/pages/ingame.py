@@ -52,6 +52,7 @@ class InGamePage(QWidget):
         self.diag.body.addLayout(self.diag_body)
         drow = QHBoxLayout()
         drow.addWidget(button("Install / update mod", "Primary", slot=self.install_mod))
+        drow.addWidget(button("Use detected log path", slot=self.use_detected_log))
         drow.addWidget(button("Re-check", slot=self.check_setup))
         drow.addWidget(button("Reset HUD position", "Ghost", slot=self.reset_hud))
         drow.addStretch(1)
@@ -161,6 +162,16 @@ class InGamePage(QWidget):
             lab.setStyleSheet(f"color: {colours[c.level]}; background: transparent;")
             self.diag_body.addWidget(lab)
         self.diag.show()
+
+    def use_detected_log(self) -> None:
+        path = config.default_lua_log()
+        self.app.settings.lua_log = path
+        self.app.save_settings()
+        if self.source is not None:  # reconnect so the new path takes effect
+            self.toggle_source()
+            self.toggle_source()
+        self.app.toast.emit("success", f"Log path set to {path}")
+        self.check_setup()
 
     def install_mod(self) -> None:
         civ = config.find_civ_dir()

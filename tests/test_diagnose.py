@@ -10,7 +10,7 @@ from civ6advisor.state import diagnose
 def home(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("USERPROFILE", str(tmp_path))
-    for var in ("OneDrive", "OneDriveConsumer", "OneDriveCommercial"):
+    for var in ("OneDrive", "OneDriveConsumer", "OneDriveCommercial", "LOCALAPPDATA"):
         monkeypatch.delenv(var, raising=False)
     return tmp_path
 
@@ -27,8 +27,24 @@ def test_no_civ_folder(home):
 def test_finds_onedrive_documents(home):
     civ = home / "OneDrive" / "Documents" / "My Games" / "Sid Meier's Civilization VI"
     civ.mkdir(parents=True)
-    assert config.find_civ_dir() == civ
-    assert config.default_lua_log().endswith("Lua.log") and "OneDrive" in config.default_lua_log()
+    assert config.find_civ_dir() == civ  # mods and AppOptions.txt live here
+
+
+def test_logs_live_under_local_appdata(home, monkeypatch):
+    civ = home / "Documents" / "My Games" / "Sid Meier's Civilization VI"
+    civ.mkdir(parents=True)
+    logs = home / "AppData" / "Local" / "Firaxis Games" / "Sid Meier's Civilization VI" / "Logs"
+    logs.mkdir(parents=True)
+    assert config.find_logs_dir() == logs
+    assert config.default_lua_log() == str(logs / "Lua.log")
+    (logs / "Lua.log").write_text("CIV6ADV|" + '{"kind":"hello"}\n', encoding="utf-8")
+    texts = " ".join(c.text for c in diagnose.run(config.default_lua_log()))
+    assert "1 advisor line" in texts and "Logs folder" in texts
+    # A stale path saved by an older version is replaced by the real one.
+    monkey_settings = config.Settings(lua_log=str(civ / "Logs" / "Lua.log"))
+    monkeypatch.setattr(config, "SETTINGS", home / "cfg.json")
+    monkey_settings.save()
+    assert config.Settings.load().lua_log == str(logs / "Lua.log")
 
 
 def test_install_and_log_states(home):

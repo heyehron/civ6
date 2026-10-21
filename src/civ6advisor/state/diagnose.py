@@ -67,17 +67,19 @@ def run(log_path: str) -> list[Check]:
             out.append(Check("info", "Make sure it is ticked under Additional Content (Mods) before starting a "
                                      "new game. A mod only loads when the game starts."))
 
-    logs = civ / "Logs"
-    if not logs.exists():
-        out.append(Check("warn", "There is no Logs folder yet.", "It appears after Civ VI has run."))
+    logs = config.find_logs_dir()
+    if logs is None:
+        tried = "; ".join(str(p) for p in config.logs_dir_candidates())
+        out.append(Check("warn", "No Civ VI Logs folder found.", f"It appears after Civ VI has run. Looked in: {tried}"))
     else:
+        out.append(Check("ok", f"Logs folder: {logs}"))
         files = sorted(logs.glob("*.log"), key=lambda p: p.stat().st_mtime, reverse=True)
         out.append(Check("info", "Log files: " + (", ".join(f"{f.name} ({_age(f)})" for f in files[:6]) or "none")))
 
     lp = Path(log_path)
-    if str(lp.parent) != str(logs) and lp.parent.exists() is False:
-        out.append(Check("warn", f"The configured Lua.log path's folder does not exist: {lp.parent}",
-                         "Fix the path in Settings."))
+    if logs is not None and lp.parent != logs:
+        out.append(Check("warn", f"Settings point to {lp.parent}, but the logs folder is {logs}.",
+                         "Press Use detected log path (or fix it in Settings)."))
     if not lp.exists():
         out.append(Check("fail", f"{lp.name} does not exist.",
                          "Civ VI writes Lua.log only when Lua logging is on. Check the AppOptions.txt lines "

@@ -34,9 +34,26 @@ def find_civ_dir() -> Path | None:
     return next((p for p in civ_dir_candidates() if p.exists()), None)
 
 
+def logs_dir_candidates() -> list[Path]:
+    """Civ VI keeps Mods and AppOptions.txt under Documents/My Games, but on Windows its logs live under
+    AppData/Local/Firaxis Games."""
+    home = Path.home()
+    locals_ = []
+    if os.environ.get("LOCALAPPDATA"):
+        locals_.append(Path(os.environ["LOCALAPPDATA"]))
+    locals_.append(home / "AppData" / "Local")
+    out = [b / "Firaxis Games" / "Sid Meier's Civilization VI" / "Logs" for b in locals_]
+    out += [p / "Logs" for p in civ_dir_candidates()]
+    seen = set()
+    return [p for p in out if not (p in seen or seen.add(p))]
+
+
+def find_logs_dir() -> Path | None:
+    return next((p for p in logs_dir_candidates() if p.exists()), None)
+
+
 def default_lua_log() -> str:
-    base = find_civ_dir() or civ_dir_candidates()[0]
-    return str(base / "Logs" / "Lua.log")
+    return str((find_logs_dir() or logs_dir_candidates()[0]) / "Lua.log")
 
 
 @dataclass
@@ -62,7 +79,11 @@ class Settings:
         except (OSError, ValueError):
             raw = {}
         known = {k: v for k, v in raw.items() if k in cls.__dataclass_fields__}
-        return cls(**known)
+        s = cls(**known)
+        # An older default pointed at Documents; follow the real logs folder if the saved path is stale.
+        if not Path(s.lua_log).exists() and Path(default_lua_log()).exists():
+            s.lua_log = default_lua_log()
+        return s
 
     def save(self) -> None:
         HOME.mkdir(parents=True, exist_ok=True)
