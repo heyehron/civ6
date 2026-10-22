@@ -1,6 +1,7 @@
 """Checks that explain why the advisor mod's output is not reaching the app."""
 from __future__ import annotations
 
+import json
 import shutil
 import time
 from dataclasses import dataclass
@@ -39,6 +40,37 @@ def install_mod(civ_dir: Path) -> Path:
         shutil.rmtree(dest)
     shutil.copytree(REPO_MOD, dest)
     return dest
+
+
+def _advisor_lines(text: str, limit: int = 6) -> list[Check]:
+    """Summarise what the mod has printed, so a stalled mod can be diagnosed from the app alone."""
+    out: list[Check] = []
+    seen = {"snapshot": 0}
+    for line in text.splitlines():
+        i = line.find(MARKER)
+        if i < 0:
+            continue
+        try:
+            p = json.loads(line[i + len(MARKER):])
+        except ValueError:
+            out.append(Check("warn", "Unreadable advisor line: " + line[i:i + 160]))
+            continue
+        kind = p.get("kind", "?")
+        if kind == "snapshot":
+            seen["snapshot"] += 1
+            if p.get("mod_errors"):
+                out.append(Check("warn", f"Snapshot at turn {p.get('turn')} had section errors: "
+                                         + " | ".join(p["mod_errors"])[:400]))
+        elif kind == "warning":
+            out.append(Check("warn", "Mod warning: " + str(p.get("text", ""))[:300]))
+        elif kind == "hello":
+            out.append(Check("info", f"Mod started (version {p.get('version')})."))
+    if not seen["snapshot"]:
+        out.append(Check("fail", "The mod started but has not written a game snapshot.",
+                         "Start a new game or reload one. If that doesn't help, copy the warnings above."))
+    else:
+        out.append(Check("ok", f"{seen['snapshot']} snapshot(s) written."))
+    return out[-limit - 2:]
 
 
 def run(log_path: str) -> list[Check]:
@@ -89,6 +121,7 @@ def run(log_path: str) -> list[Check]:
         n = text.count(MARKER)
         if n:
             out.append(Check("ok", f"{lp.name} has {n} advisor line(s), last written {_age(lp)}."))
+            out += _advisor_lines(text)
         elif lp.stat().st_size == 0:
             out.append(Check("warn", f"{lp.name} exists but is empty (written {_age(lp)}).",
                              "Logging may be on but the mod did not run: is it enabled, and did you start a "
@@ -101,11 +134,12 @@ def run(log_path: str) -> list[Check]:
             if err:
                 out.append(Check("info", "Lines mentioning CIV6ADV: " + " | ".join(e[:140] for e in err)))
 
-    opts = civ / "AppOptions.txt"
-    if opts.exists():
+    opts = next((p for p in (logs.parent / "AppOptions.txt" if logs else None, civ / "AppOptions.txt")
+                 if p is not None and p.exists()), None)
+    if opts is not None:
         lines = [ln.strip() for ln in opts.read_text(encoding="utf-8", errors="replace").splitlines()
                  if any(h in ln.lower() for h in LOG_HINTS)]
-        out.append(Check("info", "AppOptions.txt logging-related lines: " + (" | ".join(lines) or "none found"),
+        out.append(Check("info", f"{opts} logging-related lines: " + (" | ".join(lines) or "none found"),
                          "If Lua.log is missing, the option that turns Lua logging on is usually here. Paste these "
                          "lines to the developer if unsure."))
     else:

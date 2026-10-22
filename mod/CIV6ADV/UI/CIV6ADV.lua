@@ -4,8 +4,6 @@
 -- only drops that field instead of breaking the export. Untested in-game until M0.
 
 local MARKER = "CIV6ADV|"
-local lastTurnSent = -1
-local pending = false
 
 -- JSON ---------------------------------------------------------------------------------
 local function esc(s)
@@ -47,10 +45,25 @@ local function toJson(v)
 end
 
 -- Helpers ------------------------------------------------------------------------------
+-- Failed reads fall back to a default, but the message is remembered and reported on the snapshot.
+local swallowed, swallowedSeen = {}, {}
+
 local function try(fn, fallback)
   local ok, res = pcall(fn)
   if ok then return res end
+  local msg = tostring(res):gsub("\n.*", ""):sub(1, 140)
+  if not swallowedSeen[msg] and #swallowed < 20 then
+    swallowedSeen[msg] = true
+    swallowed[#swallowed + 1] = msg
+  end
   return fallback
+end
+
+-- ipairs on something that is not a table raises an error; report which call it was and skip it.
+local function asTable(value, label)
+  if type(value) == "table" then return value end
+  try(function() error("expected a table from " .. label .. ", got " .. type(value), 0) end)
+  return {}
 end
 
 local function lookup(tableName, key, column)
@@ -211,7 +224,7 @@ local function religionInfo(s, id, player)
     local r = player:GetReligion():GetReligionTypeCreated()
     if r == nil or r < 0 then return end
     local civs, needed = 0, 0
-    for _, pid in ipairs(PlayerManager.GetAliveMajorIDs()) do
+    for _, pid in ipairs(asTable(PlayerManager.GetAliveMajorIDs(), "GetAliveMajorIDs")) do
       needed = needed + 1
       local p = Players[pid]
       if p:GetReligion():GetReligionInMajorityOfCities() == r then civs = civs + 1 end
@@ -225,7 +238,7 @@ local function cityStateInfo(s, id, player)
   s.city_states = try(function()
     local out = {}
     local diplo = player:GetDiplomacy()
-    for _, minor in ipairs(PlayerManager.GetAliveMinors()) do
+    for _, minor in ipairs(asTable(PlayerManager.GetAliveMinors(), "GetAliveMinors")) do
       local mid = minor:GetID()
       if diplo:HasMet(mid) then
         local cs = { name = Locale.Lookup(PlayerConfigurations[mid]:GetCivilizationShortDescription()) }
@@ -233,6 +246,7 @@ local function cityStateInfo(s, id, player)
         cs.envoys = try(function() return minor:GetInfluence():GetTokensReceived(id) end)
         cs.religion = try(function()
           local cap = minor:GetCities():GetCapitalCity()
+          if cap == nil then return nil end
           local r = cap:GetReligion():GetMajorityReligion()
           if r ~= nil and r >= 0 then return GameInfo.Religions[r].ReligionType end
           return nil
@@ -248,7 +262,7 @@ local function diplomacyInfo(s, id, player)
   s.at_war_with = try(function()
     local out = {}
     local diplo = player:GetDiplomacy()
-    for _, pid in ipairs(PlayerManager.GetAliveMajorIDs()) do
+    for _, pid in ipairs(asTable(PlayerManager.GetAliveMajorIDs(), "GetAliveMajorIDs")) do
       if pid ~= id and diplo:IsAtWarWith(pid) then
         out[#out + 1] = PlayerConfigurations[pid]:GetCivilizationTypeName()
       end
@@ -265,7 +279,7 @@ local function diplomacyInfo(s, id, player)
   end)
   try(function()
     local held = 0
-    for _, pid in ipairs(PlayerManager.GetAliveMajorIDs()) do
+    for _, pid in ipairs(asTable(PlayerManager.GetAliveMajorIDs(), "GetAliveMajorIDs")) do
       for _, city in Players[pid]:GetCities():Members() do
         if city:IsOriginalCapital() and city:GetOwner() == id then held = held + 1 end
       end
@@ -275,7 +289,7 @@ local function diplomacyInfo(s, id, player)
   end)
   s.governors = try(function()
     local out = {}
-    for _, g in ipairs(player:GetGovernors():GetGovernorList()) do
+    for _, g in ipairs(asTable(player:GetGovernors():GetGovernorList(), "GetGovernorList")) do
       local row = GameInfo.Governors[g:GetType()]
       out[#out + 1] = { type = row.GovernorType, established = g:IsEstablished() }
     end
@@ -284,34 +298,51 @@ local function diplomacyInfo(s, id, player)
 end
 
 -- Snapshot -----------------------------------------------------------------------------
-local function snapshot()
-  local id, player = localPlayer()
-  if player == nil then return end
-  local s = { kind = "snapshot", turn = Game.GetCurrentGameTurn() }
-  local sections = {
-    function() setupInfo(s, id) end,
-    function() eraInfo(s, id) end,
-    function() researchInfo(s, player) end,
-    function() cityInfo(s, id, player) end,
-    function() economyInfo(s, player) end,
-    function() religionInfo(s, id, player) end,
-    function() cityStateInfo(s, id, player) end,
-    function() diplomacyInfo(s, id, player) end,
-  }
-  for _, fn in ipairs(sections) do pcall(fn) end
-  s.wonders_lost = ExposedMembers and ExposedMembers.CIV6ADV_LOST or {}
-  print(MARKER .. toJson(s))
+-- Errors are never swallowed silently: a failing section is listed in "mod_errors" on the snapshot,
+-- and a failure of the whole snapshot is printed as a "warning" line, so the app can show it.
+local lastJson = nil
+
+local function warn(text)
+  print(MARKER .. toJson({ kind = "warning", text = tostring(text):sub(1, 300) }))
 end
 
--- Debounce: several events fire per action; send at most one snapshot per frame burst.
-local function requestSnapshot()
-  if pending then return end
-  pending = true
-  ContextPtr:SetUpdate(function()
-    ContextPtr:ClearUpdate()
-    pending = false
-    pcall(snapshot)
-  end)
+local function snapshot(reason)
+  local id, player = localPlayer()
+  if player == nil then
+    warn("no local player yet (" .. tostring(reason) .. ")")
+    return
+  end
+  local s = { kind = "snapshot", turn = Game.GetCurrentGameTurn(), reason = reason }
+  local errors = {}
+  swallowed, swallowedSeen = {}, {}
+  local sections = {
+    { "setup", function() setupInfo(s, id) end },
+    { "era", function() eraInfo(s, id) end },
+    { "research", function() researchInfo(s, player) end },
+    { "cities", function() cityInfo(s, id, player) end },
+    { "economy", function() economyInfo(s, player) end },
+    { "religion", function() religionInfo(s, id, player) end },
+    { "city_states", function() cityStateInfo(s, id, player) end },
+    { "diplomacy", function() diplomacyInfo(s, id, player) end },
+  }
+  for _, sec in ipairs(sections) do
+    local ok, err = pcall(sec[2])
+    if not ok then errors[#errors + 1] = sec[1] .. ": " .. tostring(err):sub(1, 160) end
+  end
+  s.wonders_lost = ExposedMembers and ExposedMembers.CIV6ADV_LOST or {}
+  for _, m in ipairs(swallowed) do errors[#errors + 1] = "read: " .. m end
+  if #errors > 0 then s.mod_errors = errors end
+  local json = toJson(s)
+  -- Several events fire for one action; skip a snapshot identical to the last one (ignoring the reason).
+  local key = json:gsub('"reason":"[^"]*"', "")
+  if key == lastJson then return end
+  lastJson = key
+  print(MARKER .. json)
+end
+
+local function send(reason)
+  local ok, err = pcall(snapshot, reason)
+  if not ok then warn("snapshot failed: " .. tostring(err)) end
 end
 
 -- Events -------------------------------------------------------------------------------
@@ -320,20 +351,11 @@ ExposedMembers = ExposedMembers or {}
 ExposedMembers.CIV6ADV_LOST = lost
 
 local function onWonderCompleted(x, y, buildingIndex, playerIndex)
-  local id = Game.GetLocalPlayer()
-  if playerIndex ~= id then
+  if playerIndex ~= Game.GetLocalPlayer() then
     local row = GameInfo.Buildings[buildingIndex]
     if row then lost[#lost + 1] = row.BuildingType end
   end
-  requestSnapshot()
-end
-
-local function onTurnBegin()
-  local t = Game.GetCurrentGameTurn()
-  if t ~= lastTurnSent then
-    lastTurnSent = t
-    requestSnapshot()
-  end
+  send("wonder")
 end
 
 local function hook(name, fn)
@@ -342,19 +364,19 @@ local function hook(name, fn)
 end
 
 local function init()
-  hook("LocalPlayerTurnBegin", onTurnBegin)
-  hook("ResearchCompleted", requestSnapshot)
-  hook("CivicCompleted", requestSnapshot)
-  hook("CityAddedToMap", requestSnapshot)
+  hook("LocalPlayerTurnBegin", function() send("turn") end)
+  hook("ResearchCompleted", function() send("research") end)
+  hook("CivicCompleted", function() send("civic") end)
+  hook("CityAddedToMap", function() send("city") end)
   hook("WonderCompleted", onWonderCompleted)
-  hook("GameEraChanged", requestSnapshot)
-  hook("ReligionFounded", requestSnapshot)
-  hook("GovernmentPolicyChanged", requestSnapshot)
-  hook("InfluenceGiven", requestSnapshot)
-  hook("DistrictBuildProgressChanged", requestSnapshot)
-  hook("LoadGameViewStateDone", requestSnapshot)
-  print(MARKER .. toJson({ kind = "hello", version = 1 }))
-  requestSnapshot()
+  hook("GameEraChanged", function() send("era") end)
+  hook("ReligionFounded", function() send("religion") end)
+  hook("GovernmentPolicyChanged", function() send("policy") end)
+  hook("InfluenceGiven", function() send("influence") end)
+  hook("LoadGameViewStateDone", function() send("loaded") end)
+  print(MARKER .. toJson({ kind = "hello", version = 2 }))
+  send("init")
 end
 
-pcall(init)
+local ok, err = pcall(init)
+if not ok then print(MARKER .. toJson({ kind = "warning", text = "init failed: " .. tostring(err) })) end
